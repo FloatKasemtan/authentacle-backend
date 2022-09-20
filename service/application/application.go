@@ -10,8 +10,13 @@ type ApplicationResponse struct {
 	Key  string `json:"key"`
 }
 
+type ApplicationsResponse struct {
+	Name string `json:"name"`
+	Logo string `json:"logo"`
+}
+
 type ApplicationService interface {
-	GetAllApps(id string) ([]*ApplicationResponse, error)
-	GetApp(id string) (*ApplicationResponse, error)
+	GetAllApps(id string) ([]*ApplicationsResponse, error)
+	GetApp(id string, userId string) (*ApplicationResponse, error)
 	CreateApp(applicationRequest *request.ApplicationRequest, userId string) error
 }

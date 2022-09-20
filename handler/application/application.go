@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/floatkasemtan/authentacle-service/service/application"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
@@ -18,18 +17,47 @@ func NewAppHandler(applicationService application.ApplicationService) applicatio
 }
 
 func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
+	// Get user id
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	// Get application of user
+	applications, err := h.applicationService.GetAllApps(id)
+	if err != nil {
+		return c.JSON(response.ErrorResponse{
+			Code:  "400",
+			Error: err.Error(),
+		})
+	}
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",
-		Data:    nil,
+		Data: map[string]any{
+			"applications": applications,
+		},
 	})
 }
 
 func (h applicationHandler) GetApp(c *fiber.Ctx) error {
+	// Get user id
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	id := claims["id"].(string)
+
+	// Parse request body
+
+	app, err := h.applicationService.GetApp(c.Params("id"), id)
+	if err != nil {
+		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+	}
+
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",
-		Data:    nil,
+		Data: map[string]any{
+			"application": app,
+		},
 	})
 }
 
@@ -37,22 +65,19 @@ func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
 	// Get user id
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	spew.Dump(claims)
 	id := claims["id"].(string)
 
 	// Parse request body
-	app := new(request.ApplicationRequest)
-	if err := c.BodyParser(app); err != nil {
+	body := new(request.ApplicationRequest)
+	if err := c.BodyParser(body); err != nil {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
 	}
-	spew.Dump(app)
 
-	if err := h.applicationService.CreateApp(app, id); err != nil {
+	if err := h.applicationService.CreateApp(body, id); err != nil {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
 	}
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",
-		Data:    nil,
 	})
 }

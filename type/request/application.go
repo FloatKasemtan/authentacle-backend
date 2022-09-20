@@ -5,3 +5,7 @@ type ApplicationRequest struct {
 	Logo      string `json:"logo"`
 	UnhashKey string `json:"unhash_key"`
 }
+
+type GetApplicationRequest struct {
+	Id string `json:"id"`
+}

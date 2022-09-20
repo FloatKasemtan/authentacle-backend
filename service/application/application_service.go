@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"github.com/floatkasemtan/authentacle-service/repository/application"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,25 +15,28 @@ func NewAppService(applicationRepository application.Repository) applicationServ
 	return applicationService{applicationRepository: applicationRepository}
 }
 
-func (a applicationService) GetApp(id string) (*ApplicationResponse, error) {
-	application, err := a.applicationRepository.GetAppById(id)
+func (a applicationService) GetApp(id string, userId string) (*ApplicationResponse, error) {
+	app, err := a.applicationRepository.GetAppById(id)
 	if err != nil {
 		return nil, err
 	}
+	if app.UserId.Hex() != userId {
+		return nil, errors.New("Permission denied")
+	}
 
-	return &ApplicationResponse{Name: application.Name, Logo: application.Logo, Key: application.Key}, nil
+	return &ApplicationResponse{Name: app.Name, Logo: app.Logo, Key: app.Key}, nil
 }
 
-func (a applicationService) GetAllApps(id string) ([]*ApplicationResponse, error) {
+func (a applicationService) GetAllApps(id string) ([]*ApplicationsResponse, error) {
 
-	applications, err := a.applicationRepository.GetAllAppsByUserId("")
+	applications, err := a.applicationRepository.GetAllAppsByUserId(id)
 	if err != nil {
 		return nil, err
 	}
 
-	var applicationResponses []*ApplicationResponse
-	for _, application := range applications {
-		applicationResponses = append(applicationResponses, &ApplicationResponse{Name: application.Name, Logo: application.Logo, Key: application.Key})
+	var applicationResponses []*ApplicationsResponse
+	for _, app := range applications {
+		applicationResponses = append(applicationResponses, &ApplicationsResponse{Name: app.Name, Logo: app.Logo})
 	}
 
 	return applicationResponses, nil
