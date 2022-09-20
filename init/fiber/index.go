@@ -17,8 +17,8 @@ func Initialize() {
 	// Initialize http instance
 	app = fiber.New(fiber.Config{
 		ErrorHandler: errorHandler,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  100 * time.Second,
+		WriteTimeout: 100 * time.Second,
 	})
 
 	app.All("/", func(c *fiber.Ctx) error {
