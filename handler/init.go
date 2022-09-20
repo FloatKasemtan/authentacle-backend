@@ -39,6 +39,6 @@ func Init(router fiber.Router) {
 	}))
 
 	applicationGroup.Get("all", applicationHandler.GetAllApps)
-	applicationGroup.Get("get", applicationHandler.GetApp)
+	applicationGroup.Get(":id", applicationHandler.GetApp)
 	applicationGroup.Post("create", applicationHandler.CreateApp)
 }
