@@ -5,6 +5,7 @@ import (
 	"github.com/floatkasemtan/authentacle-service/handler/user"
 	"github.com/floatkasemtan/authentacle-service/init/config"
 	"github.com/floatkasemtan/authentacle-service/init/db"
+	"github.com/floatkasemtan/authentacle-service/init/fiber/middleware"
 	appRepo "github.com/floatkasemtan/authentacle-service/repository/application"
 	userRepo "github.com/floatkasemtan/authentacle-service/repository/user"
 	appService "github.com/floatkasemtan/authentacle-service/service/application"
@@ -21,7 +22,7 @@ func Init(router fiber.Router) {
 
 	userGroup := router.Group("user/")
 
-	userGroup.Get("login", userHandler.SignIn)
+	userGroup.Post("login", middleware.Totp, userHandler.SignIn)
 	userGroup.Post("register", userHandler.SignUp)
 
 	// JWT Middleware
@@ -39,6 +40,6 @@ func Init(router fiber.Router) {
 	}))
 
 	applicationGroup.Get("all", applicationHandler.GetAllApps)
-	applicationGroup.Get(":id", applicationHandler.GetApp)
+	applicationGroup.Get(":id", middleware.Totp, applicationHandler.GetApp)
 	applicationGroup.Post("create", applicationHandler.CreateApp)
 }

@@ -23,14 +23,14 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 	}
 
 	// Create user
-	token, err := h.userService.SignUp(u.Email, u.Username, u.Password)
+	token, err := h.userService.SignUp(u.Username, u.Email, u.Password)
 	if err != nil {
 		return c.JSON(response.ErrorResponse{Code: "500", Message: err.Error()})
 	}
 
 	return c.JSON(response.SuccessResponse{
 		Success: true,
-		Message: "Successfully sign-up",
+		Message: "Successfully register",
 		Data: map[string]any{
 			"token": token,
 		},
@@ -38,10 +38,25 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 }
 
 func (h userHandler) SignIn(c *fiber.Ctx) error {
+	u := new(request.UserLoginRequest)
+	if err := c.BodyParser(u); err != nil {
+		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+	}
+
+	token, err := h.userService.SignIn(u.Username, u.Password)
+	if err != nil {
+		return c.JSON(response.ErrorResponse{
+			Code:    "400",
+			Message: "Username and Password are not match",
+			Error:   err.Error(),
+		})
+	}
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",
-		Data:    nil,
+		Data: map[string]any{
+			token: "token",
+		},
 	})
 }
 
@@ -54,6 +69,7 @@ func (h userHandler) GetUser(c *fiber.Ctx) error {
 }
 
 func (h userHandler) SendVerificationForm(c *fiber.Ctx) error {
+
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",

@@ -4,8 +4,8 @@ import (
 	"github.com/floatkasemtan/authentacle-service/service/application"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
+	"github.com/floatkasemtan/authentacle-service/util"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 type applicationHandler struct {
@@ -18,9 +18,7 @@ func NewAppHandler(applicationService application.ApplicationService) applicatio
 
 func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
 	// Get user id
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	id := claims["id"].(string)
+	id := util.GetUserId(c)
 
 	// Get application of user
 	applications, err := h.applicationService.GetAllApps(id)
@@ -41,12 +39,9 @@ func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
 
 func (h applicationHandler) GetApp(c *fiber.Ctx) error {
 	// Get user id
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	id := claims["id"].(string)
+	id := util.GetUserId(c)
 
 	// Parse request body
-
 	app, err := h.applicationService.GetApp(c.Params("id"), id)
 	if err != nil {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
@@ -63,9 +58,7 @@ func (h applicationHandler) GetApp(c *fiber.Ctx) error {
 
 func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
 	// Get user id
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	id := claims["id"].(string)
+	id := util.GetUserId(c)
 
 	// Parse request body
 	body := new(request.ApplicationRequest)

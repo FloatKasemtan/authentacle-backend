@@ -10,5 +10,5 @@ type Service interface {
 	SignUp(username string, email string, password string) (string, error)
 	SignIn(username string, password string) (string, error)
 	GetUser(userId string) (*Response, error)
-	SendVerificationForm(userId string) error
+	SendVerificationForm(id string, email string) error
 }
