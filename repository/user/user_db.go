@@ -74,7 +74,7 @@ func (u userRepositoryDB) GetById(id string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	filter := bson.D{{"_id", objectId}}
+	filter := bson.D{{Key: "_id", Value: objectId}}
 
 	var result bson.D
 	if err := coll.FindOne(context.TODO(), filter).Decode(&result); err != nil {
