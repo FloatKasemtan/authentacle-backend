@@ -12,7 +12,7 @@ type User struct {
 }
 
 type Repository interface {
-	SignUp(username string, email string, password string) (string, error)
+	SignUp(username string, email string, password string, secret string) (string, error)
 	SignIn(username string) (*User, error)
 	GetById(userId string) (*User, error)
 	SendVerificationForm(userId string, secret string) error

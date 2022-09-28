@@ -23,7 +23,7 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 	}
 
 	// Create user
-	token, err := h.userService.SignUp(u.Username, u.Email, u.Password)
+	token, base64, secret, err := h.userService.SignUp(u.Username, u.Email, u.Password)
 	if err != nil {
 		return c.JSON(response.ErrorResponse{Code: "500", Message: err.Error()})
 	}
@@ -32,7 +32,9 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 		Success: true,
 		Message: "Successfully register",
 		Data: map[string]any{
-			"token": token,
+			"token":       token,
+			"image":       base64,
+			"user_secret": secret,
 		},
 	})
 }
@@ -43,7 +45,7 @@ func (h userHandler) SignIn(c *fiber.Ctx) error {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
 	}
 
-	token, err := h.userService.SignIn(u.Username, u.Password)
+	token, err := h.userService.SignIn(u.Username, u.Password, u.Otp)
 	if err != nil {
 		return c.JSON(response.ErrorResponse{
 			Code:    "400",
@@ -55,7 +57,7 @@ func (h userHandler) SignIn(c *fiber.Ctx) error {
 		Success: true,
 		Message: "",
 		Data: map[string]any{
-			token: "token",
+			"token": token,
 		},
 	})
 }

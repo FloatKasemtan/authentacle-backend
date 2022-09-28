@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,17 +17,24 @@ func NewUserRepositoryDB(db *mongo.Client) userRepositoryDB {
 	return userRepositoryDB{db: db}
 }
 
-func (u userRepositoryDB) SignUp(username string, email string, password string) (string, error) {
+func (u userRepositoryDB) SignUp(username string, email string, password string, secret string) (string, error) {
 	coll := u.db.Database(("Authentacle")).Collection("user")
-	filter := bson.D{{"username", username}}
 
 	var checkReplica bson.D
+
+	filter := bson.D{{Key: "username", Value: username}}
 	coll.FindOne(context.TODO(), filter).Decode(&checkReplica)
 	if len(checkReplica.Map()) > 0 {
-		print("SUS")
 		return "", errors.New("user already exist")
 	}
-	doc := bson.D{{Key: "username", Value: username}, {Key: "email", Value: email}, {Key: "password", Value: password}, {Key: "isVerify", Value: false}, {Key: "secret", Value: ""}}
+
+	filter = bson.D{{Key: "email", Value: email}}
+	coll.FindOne(context.TODO(), filter).Decode(&checkReplica)
+	if len(checkReplica.Map()) > 0 {
+		return "", errors.New("email already exist")
+	}
+
+	doc := bson.D{{Key: "username", Value: username}, {Key: "email", Value: email}, {Key: "password", Value: password}, {Key: "isVerify", Value: false}, {Key: "secret", Value: secret}}
 	result, err := coll.InsertOne(context.TODO(), doc)
 
 	if err != nil {
@@ -40,7 +48,7 @@ func (u userRepositoryDB) SignUp(username string, email string, password string)
 // Return JWT Token
 func (u userRepositoryDB) SignIn(username string) (*User, error) {
 	coll := u.db.Database(("Authentacle")).Collection("user")
-	filter := bson.D{{"username", username}}
+	filter := bson.D{{Key: "username", Value: username}}
 
 	var result bson.D
 	if err := coll.FindOne(context.TODO(), filter).Decode(&result); err != nil {
@@ -89,8 +97,8 @@ func (u userRepositoryDB) SendVerificationForm(id string, secret string) error {
 	if err != nil {
 		return err
 	}
-	filter := bson.D{{"_id", objectId}}
-	update := bson.D{{"$set", bson.D{{"secret", secret}, {"isVerify", true}}}}
+	filter := bson.D{{Key: "_id", Value: objectId}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "secret", Value: secret}, {Key: "isVerify", Value: true}}}}
 
 	var result bson.D
 	if err := coll.FindOneAndUpdate(context.TODO(), filter, update).Decode(&result); err != nil {

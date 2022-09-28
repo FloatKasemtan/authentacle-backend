@@ -25,16 +25,12 @@ func Init(router fiber.Router) {
 	userGroup.Post("login", middleware.Totp, userHandler.SignIn)
 	userGroup.Post("register", userHandler.SignUp)
 
-	// JWT Middleware
-	// Use(jwtware.New(jwtware.Config{
-	// 	SigningKey: []byte(config.C.JWT_SECRET),
-	// }))
-
 	applicationRepository := appRepo.NewAppRepositoryDB(db.DB)
 	applicationService := appService.NewAppService(applicationRepository)
 	applicationHandler := application.NewAppHandler(applicationService)
 
 	applicationGroup := router.Group("application/")
+
 	applicationGroup.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte(config.C.JWT_SECRET),
 	}))
