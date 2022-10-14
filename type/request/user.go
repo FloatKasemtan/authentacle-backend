@@ -1,13 +1,13 @@
 package request
 
 type UserRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string `json:"username"validate:"required"`
+	Email    string `json:"email"validate:"required"`
+	Password string `json:"password"validate:"required"`
 }
 
 type UserLoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Otp      string `json:"otp"`
+	Username string `json:"username"validate:"required"`
+	Password string `json:"password"validate:"required"`
+	Otp      string `json:"otp"validate:"required"`
 }
