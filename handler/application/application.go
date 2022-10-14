@@ -23,10 +23,7 @@ func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
 	// Get application of user
 	applications, err := h.applicationService.GetAllApps(id)
 	if err != nil {
-		return c.JSON(response.ErrorResponse{
-			Code:  "400",
-			Error: err.Error(),
-		})
+		return err
 	}
 	return c.JSON(response.SuccessResponse{
 		Success: true,
@@ -44,7 +41,7 @@ func (h applicationHandler) GetApp(c *fiber.Ctx) error {
 	// Parse request body
 	app, err := h.applicationService.GetApp(c.Params("id"), id)
 	if err != nil {
-		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+		return err
 	}
 
 	return c.JSON(response.SuccessResponse{
@@ -63,11 +60,11 @@ func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
 	// Parse request body
 	body := new(request.ApplicationRequest)
 	if err := c.BodyParser(body); err != nil {
-		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+		return err
 	}
 
 	if err := h.applicationService.CreateApp(body, id); err != nil {
-		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+		return err
 	}
 	return c.JSON(response.SuccessResponse{
 		Success: true,

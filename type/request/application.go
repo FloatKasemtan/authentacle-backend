@@ -1,7 +1,7 @@
 package request
 
 type ApplicationRequest struct {
-	Name      string `json:"name"`
+	Name      string `json:"name"validate`
 	Logo      string `json:"logo"`
 	UnhashKey string `json:"unhash_key"`
 }

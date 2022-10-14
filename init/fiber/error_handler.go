@@ -2,6 +2,7 @@ package fiber
 
 import (
 	"github.com/floatkasemtan/authentacle-service/type/response"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"strings"
 )
@@ -9,6 +10,15 @@ import (
 func errorHandler(ctx *fiber.Ctx, err error) error {
 	if e, ok := err.(*fiber.Error); ok {
 		return ctx.Status(e.Code).JSON(response.ErrorResponse{
+			Success: false,
+			Code:    strings.ReplaceAll(strings.ToUpper(e.Error()), " ", "_"),
+			Message: e.Error(),
+			Error:   e.Error(),
+		})
+	}
+
+	if e, ok := err.(validator.ValidationErrors); ok {
+		return ctx.Status(400).JSON(response.ErrorResponse{
 			Success: false,
 			Code:    strings.ReplaceAll(strings.ToUpper(e.Error()), " ", "_"),
 			Message: e.Error(),

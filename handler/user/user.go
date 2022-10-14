@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/floatkasemtan/authentacle-service/init/validator"
 	"github.com/floatkasemtan/authentacle-service/service/user"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
@@ -43,6 +44,11 @@ func (h userHandler) SignIn(c *fiber.Ctx) error {
 	u := new(request.UserLoginRequest)
 	if err := c.BodyParser(u); err != nil {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+	}
+
+	err := validator.Validate.Struct(u)
+	if err != nil {
+		return err
 	}
 
 	token, err := h.userService.SignIn(u.Username, u.Password, u.Otp)
