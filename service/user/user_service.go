@@ -101,21 +101,32 @@ func (s userService) SignIn(username string, password string, otp string) (strin
 }
 
 func (s userService) GetUser(userId string) (*Response, error) {
-	//TODO implement me
-	panic("implement me")
+	user, err := s.userRepository.GetById(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Response{
+		Username: user.Username,
+		Email:    user.Email,
+		IsVerify: user.IsVerify,
+	}, nil
 }
 
-func (s userService) SendVerificationForm(id string, email string) error {
-	generate, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "authentacle.floatykt.com",
-		AccountName: email,
-	})
-
+func (s userService) Verify(id string, otp string) error {
+	user, err := s.userRepository.GetById(id)
 	if err != nil {
 		return err
 	}
-	if err := s.userRepository.SendVerificationForm(id, generate.Secret()); err != nil {
+
+	if !totp.Validate(otp, user.Secret) {
+		return errors.New("Invalid OTP")
+	}
+
+	err = s.userRepository.Verify(id)
+	if err != nil {
 		return err
 	}
+
 	return nil
 }

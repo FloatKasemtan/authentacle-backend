@@ -5,6 +5,7 @@ import (
 	"github.com/floatkasemtan/authentacle-service/service/user"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
+	"github.com/floatkasemtan/authentacle-service/util"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -21,6 +22,11 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 	u := new(request.UserRequest)
 	if err := c.BodyParser(u); err != nil {
 		return c.JSON(response.ErrorResponse{Code: "400", Message: err.Error()})
+	}
+
+	err := validator.Validate.Struct(u)
+	if err != nil {
+		return err
 	}
 
 	// Create user
@@ -76,8 +82,10 @@ func (h userHandler) GetUser(c *fiber.Ctx) error {
 	})
 }
 
-func (h userHandler) SendVerificationForm(c *fiber.Ctx) error {
-
+func (h userHandler) Verify(c *fiber.Ctx) error {
+	id := util.GetUserId(c)
+	otp := c.Query("otp")
+	h.userService.Verify(id, otp)
 	return c.JSON(response.SuccessResponse{
 		Success: true,
 		Message: "",
