@@ -15,5 +15,5 @@ type Repository interface {
 	SignUp(username string, email string, password string, secret string) (string, error)
 	SignIn(username string) (*User, error)
 	GetById(userId string) (*User, error)
-	SendVerificationForm(userId string, secret string) error
+	Verify(userId string) error
 }

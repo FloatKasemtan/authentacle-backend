@@ -9,5 +9,5 @@ type UserRequest struct {
 type UserLoginRequest struct {
 	Username string `json:"username"validate:"required"`
 	Password string `json:"password"validate:"required"`
-	Otp      string `json:"otp"validate:"required"`
+	Otp      string `json:"otp"validate:"required,len=6"`
 }

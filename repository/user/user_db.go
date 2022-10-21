@@ -90,15 +90,14 @@ func (u userRepositoryDB) GetById(id string) (*User, error) {
 	}, nil
 }
 
-// Generate QRcode for authenticator apps
-func (u userRepositoryDB) SendVerificationForm(id string, secret string) error {
+func (u userRepositoryDB) Verify(id string) error {
 	coll := u.db.Database(("Authentacle")).Collection("user")
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 	filter := bson.D{{Key: "_id", Value: objectId}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "secret", Value: secret}, {Key: "isVerify", Value: true}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "isVerify", Value: true}}}}
 
 	var result bson.D
 	if err := coll.FindOneAndUpdate(context.TODO(), filter, update).Decode(&result); err != nil {

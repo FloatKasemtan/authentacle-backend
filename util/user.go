@@ -11,3 +11,10 @@ func GetUserId(c *fiber.Ctx) string {
 	id := claims["id"].(string)
 	return id
 }
+
+func GetUserAuthorization(c *fiber.Ctx) int64 {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	level := claims["role"].(int64)
+	return level
+}

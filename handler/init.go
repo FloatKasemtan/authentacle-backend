@@ -22,9 +22,11 @@ func Init(router fiber.Router) {
 
 	userGroup := router.Group("user/")
 
-	userGroup.Post("login", middleware.Totp, userHandler.SignIn)
+	userGroup.Post("login", userHandler.SignIn)
 	userGroup.Post("register", userHandler.SignUp)
+	userGroup.Patch("verify", userHandler.Verify)
 
+	// Application Endpoints
 	applicationRepository := appRepo.NewAppRepositoryDB(db.DB)
 	applicationService := appService.NewAppService(applicationRepository)
 	applicationHandler := application.NewAppHandler(applicationService)
@@ -36,6 +38,11 @@ func Init(router fiber.Router) {
 	}))
 
 	applicationGroup.Get("all", applicationHandler.GetAllApps)
-	applicationGroup.Get(":id", middleware.Totp, applicationHandler.GetApp)
+	applicationGroup.Get(":id", applicationHandler.GetApp)
 	applicationGroup.Post("create", applicationHandler.CreateApp)
+
+	// Administrator Endpoints
+	adminGroup := router.Group("admin/")
+
+	adminGroup.Get("get", middleware.IsAdmin, userHandler.GetUser)
 }

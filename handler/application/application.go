@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/floatkasemtan/authentacle-service/init/validator"
 	"github.com/floatkasemtan/authentacle-service/service/application"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
@@ -60,6 +61,11 @@ func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
 	// Parse request body
 	body := new(request.ApplicationRequest)
 	if err := c.BodyParser(body); err != nil {
+		return err
+	}
+
+	err := validator.Validate.Struct(body)
+	if err != nil {
 		return err
 	}
 
