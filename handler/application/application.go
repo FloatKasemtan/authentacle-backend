@@ -19,7 +19,7 @@ func NewAppHandler(applicationService application.ApplicationService) applicatio
 
 func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
 	// Get user id
-	id := util.GetUserId(c)
+	id, _ := util.GetUserInfo(c)
 
 	// Get application of user
 	applications, err := h.applicationService.GetAllApps(id)
@@ -37,7 +37,7 @@ func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
 
 func (h applicationHandler) GetApp(c *fiber.Ctx) error {
 	// Get user id
-	id := util.GetUserId(c)
+	id, _ := util.GetUserInfo(c)
 
 	// Parse request body
 	app, err := h.applicationService.GetApp(c.Params("id"), id)
@@ -56,7 +56,7 @@ func (h applicationHandler) GetApp(c *fiber.Ctx) error {
 
 func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
 	// Get user id
-	id := util.GetUserId(c)
+	id, _ := util.GetUserInfo(c)
 
 	// Parse request body
 	body := new(request.ApplicationRequest)

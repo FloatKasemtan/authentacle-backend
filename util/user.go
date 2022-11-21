@@ -1,20 +1,24 @@
 package util
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/floatkasemtan/authentacle-service/init"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func GetUserId(c *fiber.Ctx) string {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	id := claims["id"].(string)
-	return id
-}
+func GetUserInfo(c *gin.Context) (*string, *int8, error) {
+	const BearerSchema = "Bearer "
+	authKey := c.GetHeader("Authorization")
+	tokenString := authKey[len(BearerSchema):]
+	token, err := init.JWTInstance.ValidateToken(tokenString)
+	if !token.Valid {
+		return nil, nil, err
+	}
+	claims := token.Claims.(jwt.MapClaims)
 
-func GetUserAuthorization(c *fiber.Ctx) int64 {
-	user := c.Locals("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	level := claims["role"].(int64)
-	return level
+	id := claims["id"].(string)
+	level := claims["role"].(int8)
+
+	return &id, &level, nil
+
 }
