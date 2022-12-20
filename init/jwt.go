@@ -8,13 +8,14 @@ import (
 )
 
 type JWTService interface {
-	GenerateToken(email string, role int8) string
+	GenerateToken(id string, role int8, verified bool) string
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
 type CustomClaims struct {
-	Email string `json:"email"`
-	Role  int8   `json:"role"`
+	Id       string `json:"id"`
+	Role     int8   `json:"role"`
+	Verified bool   `json:"verified"`
 	jwt.RegisteredClaims
 }
 
@@ -30,10 +31,11 @@ func NewJWTService() JWTService {
 	}
 }
 
-func (service JWTServices) GenerateToken(email string, role int8) string {
+func (service JWTServices) GenerateToken(id string, role int8, verified bool) string {
 	claims := &CustomClaims{
-		Email: email,
-		Role:  role,
+		Id:       id,
+		Role:     role,
+		Verified: verified,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer: service.issuer,
 			ExpiresAt: &jwt.NumericDate{
