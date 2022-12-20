@@ -6,7 +6,9 @@ import (
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
 	"github.com/floatkasemtan/authentacle-service/util"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"net/http"
 )
 
 type applicationHandler struct {
@@ -17,63 +19,124 @@ func NewAppHandler(applicationService application.ApplicationService) applicatio
 	return applicationHandler{applicationService: applicationService}
 }
 
-func (h applicationHandler) GetAllApps(c *fiber.Ctx) error {
+func (h applicationHandler) GetAllApps(c *gin.Context) {
 	// Get user id
-	id := util.GetUserId(c)
+	id, _, verified, err := util.GetUserInfo(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid token",
+			Error:   err.Error(),
+		})
+		return
+	}
+	if !*verified {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Session unverified",
+		})
+		return
+	}
 
 	// Get application of user
-	applications, err := h.applicationService.GetAllApps(id)
+	applications, err := h.applicationService.GetAllApps(*id)
 	if err != nil {
-		return err
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response.ErrorResponse{
+			Success: false,
+			Error:   err.Error(),
+		})
+		return
 	}
-	return c.JSON(response.SuccessResponse{
+
+	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
-		Message: "",
 		Data: map[string]any{
 			"applications": applications,
 		},
 	})
 }
 
-func (h applicationHandler) GetApp(c *fiber.Ctx) error {
+func (h applicationHandler) GetApp(c *gin.Context) {
 	// Get user id
-	id := util.GetUserId(c)
-
-	// Parse request body
-	app, err := h.applicationService.GetApp(c.Params("id"), id)
+	id, _, verified, err := util.GetUserInfo(c)
 	if err != nil {
-		return err
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid token",
+			Error:   err.Error(),
+		})
+		return
 	}
 
-	return c.JSON(response.SuccessResponse{
+	if !*verified {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Session unverified",
+		})
+		return
+	}
+
+	appId := c.Params.ByName("id")
+
+	// Parse request body
+	app, err := h.applicationService.GetApp(appId, *id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
-		Message: "",
 		Data: map[string]any{
 			"application": app,
 		},
 	})
+
 }
 
-func (h applicationHandler) CreateApp(c *fiber.Ctx) error {
+func (h applicationHandler) CreateApp(c *gin.Context) {
 	// Get user id
-	id := util.GetUserId(c)
+	id, _, verified, err := util.GetUserInfo(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid token",
+			Error:   err.Error(),
+		})
+		return
+	}
+	if !*verified {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Session unverified",
+			Error:   err.Error(),
+		})
+		return
+	}
 
 	// Parse request body
 	body := new(request.ApplicationRequest)
-	if err := c.BodyParser(body); err != nil {
-		return err
+	if err := c.ShouldBindBodyWith(body, binding.JSON); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
 	}
 
-	err := validator.Validate.Struct(body)
-	if err != nil {
-		return err
+	if err := validator.Validate.Struct(body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+		return
 	}
 
-	if err := h.applicationService.CreateApp(body, id); err != nil {
-		return err
+	if err := h.applicationService.CreateApp(body, *id); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, response.ErrorResponse{
+			Error: err.Error(),
+		})
+		return
 	}
-	return c.JSON(response.SuccessResponse{
+	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
-		Message: "",
+		Message: "Successfully create application",
 	})
+
 }

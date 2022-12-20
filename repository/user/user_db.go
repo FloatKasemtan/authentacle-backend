@@ -46,7 +46,7 @@ func (u userRepositoryDB) SignUp(username string, email string, password string,
 }
 
 // Return JWT Token
-func (u userRepositoryDB) SignIn(username string) (*User, error) {
+func (u userRepositoryDB) GetUserByUsername(username string) (*User, error) {
 	coll := u.db.Database(("Authentacle")).Collection("user")
 	filter := bson.D{{Key: "username", Value: username}}
 
@@ -55,16 +55,13 @@ func (u userRepositoryDB) SignIn(username string) (*User, error) {
 		return nil, errors.New("user not found")
 	}
 
-	if !result.Map()["isVerify"].(bool) {
-		return nil, errors.New("please verify your account first")
-	}
-
 	return &User{
 		Id:       result.Map()["_id"].(primitive.ObjectID),
 		Username: result.Map()["username"].(string),
 		Password: result.Map()["password"].(string),
 		Email:    result.Map()["email"].(string),
 		Secret:   result.Map()["secret"].(string),
+		IsVerify: result.Map()["isVerify"].(bool),
 	}, nil
 }
 
@@ -86,6 +83,7 @@ func (u userRepositoryDB) GetById(id string) (*User, error) {
 		Username: result.Map()["username"].(string),
 		Password: result.Map()["password"].(string),
 		Email:    result.Map()["email"].(string),
+		Secret:   result.Map()["secret"].(string),
 		IsVerify: result.Map()["isVerify"].(bool),
 	}, nil
 }

@@ -1,15 +1,10 @@
 package user
 
 import (
-	"bytes"
 	"errors"
-	"image/png"
-	"time"
-
-	"github.com/floatkasemtan/authentacle-service/init/config"
+	"fmt"
+	jwt "github.com/floatkasemtan/authentacle-service/init"
 	"github.com/floatkasemtan/authentacle-service/repository/user"
-	"github.com/floatkasemtan/authentacle-service/util"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/pquerna/otp/totp"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,10 +17,10 @@ func NewUserService(userRepository user.Repository) userService {
 	return userService{userRepository: userRepository}
 }
 
-func (s userService) SignUp(username string, email string, password string) (string, string, string, error) {
+func (s userService) SignUp(username string, email string, password string) (*string, *string, *string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 15)
 	if err != nil {
-		return "", "", "", err
+		return nil, nil, nil, err
 	}
 
 	key, err := totp.Generate(totp.GenerateOpts{
@@ -35,69 +30,56 @@ func (s userService) SignUp(username string, email string, password string) (str
 
 	userId, err := s.userRepository.SignUp(username, email, string(hashedPassword), key.Secret())
 	if err != nil {
-		return "", "", "", err
+		return nil, nil, nil, err
 	}
 
-	// Create the Claims
-	claims := jwt.MapClaims{
-		"id":  userId,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}
-
-	// Create token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte(config.C.JWT_SECRET))
+	// Create JWT Token
+	token := jwt.JWTInstance.GenerateToken(userId, 0, true)
 	if err != nil {
-		return "", "", "", err
+		return nil, nil, nil, err
 	}
 
 	if err != nil {
-		return "", "", "", err
+		return nil, nil, nil, err
 	}
-	// Convert TOTP key into a PNG
-	var buf bytes.Buffer
-	img, err := key.Image(200, 200)
-	if err != nil {
-		return "", "", "", err
-	}
-	if err := png.Encode(&buf, img); err != nil {
-		return "", "", "", err
-	}
-	return t, util.ToBase64(buf.Bytes()), key.Secret(), nil
+
+	secret := key.Secret()
+	url := key.URL()
+	return &token, &url, &secret, nil
 }
 
-func (s userService) SignIn(username string, password string, otp string) (string, error) {
-	user, err := s.userRepository.SignIn(username)
+func (s userService) SignIn(username string, password string) (*string, *bool, *string, *string, error) {
+	user, err := s.userRepository.GetUserByUsername(username)
 	if err != nil {
-		return "", err
-	}
-
-	if !totp.Validate(otp, user.Secret) {
-		return "", errors.New("Invalid OTP")
+		return nil, nil, nil, nil, err
 	}
 
 	// Test revert check
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", err
+		return nil, nil, nil, nil, err
 	}
 
-	claims := jwt.MapClaims{
-		"id":  user.Id,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}
-
-	// Create token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte(config.C.JWT_SECRET))
+	// Create JWT Token
+	token := jwt.JWTInstance.GenerateToken(user.Id.Hex(), 0, user.IsVerify)
 	if err != nil {
-		return "", err
+		return nil, nil, nil, nil, err
 	}
 
-	return t, nil
+	if user.IsVerify {
+		return &token, &user.IsVerify, nil, nil, nil
+	} else {
+		key, err := totp.Generate(totp.GenerateOpts{
+			Issuer:      "Authentacle",
+			AccountName: user.Email,
+			Secret:      []byte(user.Secret),
+		})
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+
+		url := key.URL()
+		return &token, &user.IsVerify, &user.Secret, &url, nil
+	}
 }
 
 func (s userService) GetUser(userId string) (*Response, error) {
@@ -113,20 +95,35 @@ func (s userService) GetUser(userId string) (*Response, error) {
 	}, nil
 }
 
-func (s userService) Verify(id string, otp string) error {
+func (s userService) CheckOTP(id string, role int8, otp string) (*string, error) {
 	user, err := s.userRepository.GetById(id)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	fmt.Println(user.Secret)
+	if !totp.Validate(otp, user.Secret) {
+		return nil, errors.New("Invalid OTP")
+	}
+
+	token := jwt.JWTInstance.GenerateToken(user.Id.Hex(), role, true)
+	return &token, nil
+}
+
+func (s userService) Verify(id string, role int8, otp string) (*string, error) {
+	user, err := s.userRepository.GetById(id)
+	if err != nil {
+		return nil, err
 	}
 
 	if !totp.Validate(otp, user.Secret) {
-		return errors.New("Invalid OTP")
+		return nil, errors.New("Invalid OTP")
 	}
 
 	err = s.userRepository.Verify(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	token := jwt.JWTInstance.GenerateToken(user.Id.String(), role, true)
+	return &token, nil
 }

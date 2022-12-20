@@ -1,7 +1,6 @@
 package fiber
 
 import (
-	"github.com/floatkasemtan/authentacle-service/handler"
 	"log"
 	"time"
 
@@ -34,8 +33,6 @@ func Initialize() {
 
 	apiGroup.Use(middleware.Limiter)
 	apiGroup.Use(middleware.Cors)
-
-	handler.Init(apiGroup)
 
 	err := app.Listen(":" + config.C.PORT)
 	if err != nil {
