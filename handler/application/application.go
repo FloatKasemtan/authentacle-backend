@@ -27,12 +27,13 @@ func (h applicationHandler) GetAllApps(c *gin.Context) {
 			Message: "Invalid token",
 			Error:   err.Error(),
 		})
+		return
 	}
 	if !*verified {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Session unverified",
-			Error:   err.Error(),
 		})
+		return
 	}
 
 	// Get application of user
@@ -42,6 +43,7 @@ func (h applicationHandler) GetAllApps(c *gin.Context) {
 			Success: false,
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.SuccessResponse{
@@ -60,12 +62,14 @@ func (h applicationHandler) GetApp(c *gin.Context) {
 			Message: "Invalid token",
 			Error:   err.Error(),
 		})
+		return
 	}
+
 	if !*verified {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Session unverified",
-			Error:   err.Error(),
 		})
+		return
 	}
 
 	appId := c.Params.ByName("id")
@@ -76,6 +80,7 @@ func (h applicationHandler) GetApp(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, response.ErrorResponse{
 			Error: err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.SuccessResponse{
@@ -95,12 +100,14 @@ func (h applicationHandler) CreateApp(c *gin.Context) {
 			Message: "Invalid token",
 			Error:   err.Error(),
 		})
+		return
 	}
 	if !*verified {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Session unverified",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	// Parse request body
@@ -110,6 +117,7 @@ func (h applicationHandler) CreateApp(c *gin.Context) {
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	if err := validator.Validate.Struct(body); err != nil {
@@ -117,12 +125,14 @@ func (h applicationHandler) CreateApp(c *gin.Context) {
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	if err := h.applicationService.CreateApp(body, *id); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, response.ErrorResponse{
 			Error: err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,

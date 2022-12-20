@@ -23,19 +23,22 @@ func (h userHandler) SignUp(c *gin.Context) {
 	// Parse request body
 	body := new(request.UserRequest)
 	if err := c.ShouldBindBodyWith(body, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, response.ErrorResponse{Code: string(http.StatusBadRequest), Message: err.Error()})
+		c.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		return
 	}
 	if err := validator.Validate.Struct(body); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	// Create user
-	token, secret, err := h.userService.SignUp(body.Username, body.Email, body.Password)
+	token, url, secret, err := h.userService.SignUp(body.Username, body.Email, body.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.ErrorResponse{Code: string(http.StatusInternalServerError), Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.SuccessResponse{
@@ -43,6 +46,7 @@ func (h userHandler) SignUp(c *gin.Context) {
 		Message: "Successfully register",
 		Data: map[string]any{
 			"token":       token,
+			"url":         url,
 			"user_secret": secret,
 		},
 	})
@@ -53,10 +57,10 @@ func (h userHandler) SignIn(c *gin.Context) {
 
 	if err := c.ShouldBindBodyWith(body, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
-			Code:    string(http.StatusBadRequest),
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	if err := validator.Validate.Struct(body); err != nil {
@@ -64,26 +68,61 @@ func (h userHandler) SignIn(c *gin.Context) {
 			Message: "Invalid request body",
 			Error:   err.Error(),
 		})
+		return
 	}
 
-	token, err := h.userService.SignIn(body.Username, body.Password, body.Otp)
+	token, isVerify, secret, url, err := h.userService.SignIn(body.Username, body.Password)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
-			Code:    string(http.StatusBadRequest),
 			Message: "Username and Password are not match",
 			Error:   err.Error(),
 		})
+		return
 	}
-	c.JSON(http.StatusOK, response.SuccessResponse{
-		Success: true,
-		Data:    token,
-	})
+	if *isVerify {
+		c.JSON(http.StatusOK, response.SuccessResponse{
+			Success: true,
+			Data:    map[string]any{"token": token, "is_verify": isVerify},
+		})
+	} else {
+		c.JSON(http.StatusOK, response.SuccessResponse{
+			Success: true,
+			Data:    map[string]any{"token": token, "is_verify": isVerify, "url": url, "user_secret": secret},
+		})
+	}
 }
 
 func (h userHandler) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
 		Data:    nil,
+	})
+}
+
+func (h userHandler) CheckOTP(c *gin.Context) {
+	id, role, _, err := util.GetUserInfo(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Invalid token",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	otp := c.Query("otp")
+	token, err := h.userService.CheckOTP(*id, *role, otp)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
+			Message: "Unable to verify",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessResponse{
+		Success: true,
+		Message: "",
+		Data:    token,
 	})
 }
 
@@ -94,6 +133,7 @@ func (h userHandler) Verify(c *gin.Context) {
 			Message: "Invalid token",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	otp := c.Query("otp")
@@ -103,11 +143,11 @@ func (h userHandler) Verify(c *gin.Context) {
 			Message: "Unable to verify",
 			Error:   err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
-		Message: "",
 		Data:    token,
 	})
 }
