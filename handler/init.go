@@ -14,7 +14,7 @@ import (
 
 func InitGin(router *gin.RouterGroup) {
 	// User Endpoints
-	userRepository := userRepo.NewUserRepositoryDB(db.DB)
+	userRepository := userRepo.NewUserRepositoryDB(db.UserColl)
 	userService := userService.NewUserService(userRepository)
 	userHandler := user.NewUserHandler(userService)
 
@@ -26,7 +26,7 @@ func InitGin(router *gin.RouterGroup) {
 	userGroup.PUT("verify", userHandler.Verify)
 
 	// Application Endpoints
-	applicationRepository := appRepo.NewAppRepositoryDB(db.DB)
+	applicationRepository := appRepo.NewAppRepositoryDB(db.ApplicationColl)
 	applicationService := appService.NewAppService(applicationRepository)
 	applicationHandler := application.NewAppHandler(applicationService)
 
