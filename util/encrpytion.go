@@ -10,7 +10,7 @@ import (
 var bytes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}
 
 func Encrypt(text string) (string, error) {
-	block, err := aes.NewCipher([]byte(config.C.ENCRYPTION_KEY))
+	block, err := aes.NewCipher([]byte(config.C.EncryptionKey))
 	if err != nil {
 		return "", err
 	}
@@ -27,7 +27,7 @@ func Encode(b []byte) string {
 
 // Decrypt method is to extract back the encrypted text
 func Decrypt(text string) (string, error) {
-	block, err := aes.NewCipher([]byte(config.C.ENCRYPTION_KEY))
+	block, err := aes.NewCipher([]byte(config.C.EncryptionKey))
 	if err != nil {
 		return "", err
 	}

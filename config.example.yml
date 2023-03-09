@@ -1,0 +1,9 @@
+JWT_SECRET: "TEST_SECRET"
+CORS: ["localhost:3000"],
+PORT: "3000",
+DB_HOST: "your mongodb host",
+DB_NAME: "your mongodb database name",
+ENCRYPTION_KEY: "TEST_KEY"
+REDIS_HOST: "your redis host",
+REDIS_PASSWORD: "your redis password",
+REDIS_DB: 0

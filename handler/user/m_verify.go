@@ -18,7 +18,7 @@ func (h userHandler) Verify(c *gin.Context) {
 	}
 
 	otp := c.Query("otp")
-	token, err := h.userService.Verify(*id, *role, otp)
+	token, err := h.userService.Verify(*id, *role, otp, c.Request.UserAgent())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Unable to verify",

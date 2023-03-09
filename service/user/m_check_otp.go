@@ -7,7 +7,7 @@ import (
 	"github.com/pquerna/otp/totp"
 )
 
-func (s userService) CheckOTP(id string, role int8, otp string) (*string, error) {
+func (s userService) CheckOTP(id string, role int8, otp string, userAgent string) (*string, error) {
 	user, err := s.userRepository.GetById(id)
 	if err != nil {
 		return nil, err
@@ -21,6 +21,6 @@ func (s userService) CheckOTP(id string, role int8, otp string) (*string, error)
 		return nil, errors.New("Invalid OTP")
 	}
 
-	token := jwt.JWTInstance.GenerateToken(user.ID.Hex(), role, true)
+	token := jwt.JWTInstance.GenerateToken(user.ID.Hex(), role, true, userAgent)
 	return &token, nil
 }

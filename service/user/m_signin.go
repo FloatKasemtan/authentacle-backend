@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s userService) SignIn(username string, password string) (*string, *bool, *string, *string, error) {
+func (s userService) SignIn(username string, password string, userAgent string) (*string, *bool, *string, *string, error) {
 	user, err := s.userRepository.GetUserByUsername(username)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -18,7 +18,7 @@ func (s userService) SignIn(username string, password string) (*string, *bool, *
 	}
 
 	// Create JWT Token
-	token := jwt.JWTInstance.GenerateToken(user.ID.Hex(), 0, user.IsVerify)
+	token := jwt.JWTInstance.GenerateToken(user.ID.Hex(), 0, user.IsVerify, userAgent)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

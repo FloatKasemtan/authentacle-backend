@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s userService) SignUp(username string, email string, password string) (*string, *string, *string, error) {
+func (s userService) SignUp(username string, email string, password string, userAgent string) (*string, *string, *string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 15)
 	if err != nil {
 		return nil, nil, nil, err
@@ -32,7 +32,7 @@ func (s userService) SignUp(username string, email string, password string) (*st
 	}
 
 	// Create JWT Token
-	token := jwt.JWTInstance.GenerateToken(userId, 0, false)
+	token := jwt.JWTInstance.GenerateToken(userId, 0, false, userAgent)
 	if err != nil {
 		return nil, nil, nil, err
 	}

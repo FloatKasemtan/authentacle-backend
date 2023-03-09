@@ -1,10 +1,13 @@
 package config
 
 type config struct {
-	JWT_SECRET     string   `yaml:"JWT_SECRET"`
-	CORS           []string `yaml:"CORS"`
-	PORT           string   `yaml:"PORT"`
-	DB_HOST        string   `yaml:"DB_HOST"`
-	DB_NAME        string   `yaml:"DB_NAME"`
-	ENCRYPTION_KEY string   `yaml:"ENCRYPTION_KEY"`
+	JwtSecret     string   `yaml:"JWT_SECRET"`
+	Cors          []string `yaml:"CORS"`
+	Port          string   `yaml:"PORT"`
+	DbHost        string   `yaml:"DB_HOST"`
+	DbName        string   `yaml:"DB_NAME"`
+	EncryptionKey string   `yaml:"ENCRYPTION_KEY"`
+	RedisHost     string   `yaml:"REDIS_HOST"`
+	RedisPassword string   `yaml:"REDIS_PASSWORD"`
+	RedisDb       int      `yaml:"REDIS_DB"`
 }

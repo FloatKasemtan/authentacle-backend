@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"github.com/floatkasemtan/authentacle-service/init/validator"
 	"github.com/floatkasemtan/authentacle-service/type/request"
 	"github.com/floatkasemtan/authentacle-service/type/response"
@@ -11,6 +12,7 @@ import (
 
 func (h userHandler) SignIn(c *gin.Context) {
 	body := new(request.UserLoginRequest)
+	fmt.Println(c.Request.Referer() + c.Request.UserAgent())
 
 	if err := c.ShouldBindBodyWith(body, binding.JSON); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
@@ -28,7 +30,7 @@ func (h userHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	token, isVerify, secret, url, err := h.userService.SignIn(body.Username, body.Password)
+	token, isVerify, secret, url, err := h.userService.SignIn(body.Username, body.Password, c.Request.UserAgent())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response.ErrorResponse{
 			Message: "Username and Password are not match",

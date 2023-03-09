@@ -23,9 +23,8 @@ func (h userHandler) SignUp(c *gin.Context) {
 		})
 		return
 	}
-
 	// Create user
-	token, url, secret, err := h.userService.SignUp(body.Username, body.Email, body.Password)
+	token, url, secret, err := h.userService.SignUp(body.Username, body.Email, body.Password, c.Request.UserAgent())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return

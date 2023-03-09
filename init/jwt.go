@@ -8,14 +8,15 @@ import (
 )
 
 type JWTService interface {
-	GenerateToken(id string, role int8, verified bool) string
+	GenerateToken(id string, role int8, verified bool, userAgent string) string
 	ValidateToken(token string) (*jwt.Token, error)
 }
 
 type CustomClaims struct {
-	Id       string `json:"id"`
-	Role     int8   `json:"role"`
-	Verified bool   `json:"verified"`
+	Id        string `json:"id"`
+	Role      int8   `json:"role"`
+	Verified  bool   `json:"verified"`
+	UserAgent string `json:"user_agent"`
 	jwt.RegisteredClaims
 }
 
@@ -27,15 +28,16 @@ type JWTServices struct {
 func NewJWTService() JWTService {
 	return JWTServices{
 		issuer: "Authentacle",
-		secret: config.C.JWT_SECRET,
+		secret: config.C.JwtSecret,
 	}
 }
 
-func (service JWTServices) GenerateToken(id string, role int8, verified bool) string {
+func (service JWTServices) GenerateToken(id string, role int8, verified bool, userAgent string) string {
 	claims := &CustomClaims{
-		Id:       id,
-		Role:     role,
-		Verified: verified,
+		Id:        id,
+		Role:      role,
+		Verified:  verified,
+		UserAgent: userAgent,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer: service.issuer,
 			ExpiresAt: &jwt.NumericDate{

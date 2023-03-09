@@ -7,9 +7,9 @@ type Response struct {
 }
 
 type Service interface {
-	SignUp(username string, email string, password string) (*string, *string, *string, error)
-	SignIn(username string, password string) (*string, *bool, *string, *string, error)
+	SignUp(username string, email string, password string, userAgent string) (*string, *string, *string, error)
+	SignIn(username string, password string, userAgent string) (*string, *bool, *string, *string, error)
 	GetUser(userId string) (*Response, error)
-	Verify(id string, role int8, otp string) (*string, error)
-	CheckOTP(id string, role int8, otp string) (*string, error)
+	Verify(id string, role int8, otp string, userAgent string) (*string, error)
+	CheckOTP(id string, role int8, otp string, userAgent string) (*string, error)
 }

@@ -13,5 +13,5 @@ func Initialize() {
 	apiHandler := r.Group("api")
 	handler.InitGin(apiHandler)
 
-	r.Run(":" + config.C.PORT)
+	r.Run(":" + config.C.Port)
 }

@@ -13,7 +13,7 @@ var Client *mongo.Client
 var Database *mongo.Database
 
 func Initialize() {
-	if err := mgm.SetDefaultConfig(nil, config.C.DB_NAME, options.Client().ApplyURI(config.C.DB_HOST)); err != nil {
+	if err := mgm.SetDefaultConfig(nil, config.C.DbName, options.Client().ApplyURI(config.C.DbHost)); err != nil {
 		log.Panic("Unable to set MGM configuration: " + err.Error())
 	}
 

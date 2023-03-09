@@ -4,7 +4,6 @@ import (
 	"github.com/floatkasemtan/authentacle-service/handler/application"
 	"github.com/floatkasemtan/authentacle-service/handler/user"
 	"github.com/floatkasemtan/authentacle-service/init/db"
-	"github.com/floatkasemtan/authentacle-service/init/gin/middleware"
 	appRepo "github.com/floatkasemtan/authentacle-service/repository/application"
 	userRepo "github.com/floatkasemtan/authentacle-service/repository/user"
 	appService "github.com/floatkasemtan/authentacle-service/service/application"
@@ -37,7 +36,7 @@ func InitGin(router *gin.RouterGroup) {
 	applicationGroup.POST("create", applicationHandler.CreateApp)
 
 	// Administrator Endpoints
-	adminGroup := router.Group("admin", middleware.IsAdmin)
+	//adminGroup := router.Group("admin", middleware.IsAdmin)
 
-	adminGroup.GET("get", userHandler.GetUser)
+	router.GET("get", userHandler.GetUser)
 }

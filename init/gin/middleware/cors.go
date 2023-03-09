@@ -7,11 +7,11 @@ import (
 )
 
 var Cors = func() fiber.Handler {
-	// origins is the value of allowed CORS addresses, separated by comma (,).
+	// origins is the value of allowed Cors addresses, separated by comma (,).
 	origins := ""
-	for i, s := range config.C.CORS {
+	for i, s := range config.C.Cors {
 		origins += s
-		if i < len(config.C.CORS)-1 {
+		if i < len(config.C.Cors)-1 {
 			origins += ", "
 		}
 	}
